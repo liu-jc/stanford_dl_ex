@@ -70,8 +70,8 @@ wcost = 0;
 for l = 1:numHidden+1,
     wcost = wcost + 0.5 * ei.lambda * sum(stack{l}.W(:) .^ 2 );
 end;
-cost = cecost + wcost;
-cost = cost ./ numSamples;
+cost = cecost ./ numSamples + wcost;
+%cost = cost ./ numSamples;
 for  l = 1:numHidden+1,
     gradStack{l}.b = gradStack{l}.b / numSamples;
     gradStack{l}.W = gradStack{l}.W / numSamples;
