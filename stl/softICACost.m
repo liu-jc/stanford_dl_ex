@@ -23,11 +23,10 @@ wcost = params.lambda * sum(sum(sqrt(Y .^ 2 + params.epsilon))) / params.m;
 %cecost = 0.5 * sum(diag((W'*Y-x)' * (W'*Y-x))) / params.m;
 %norm(x,'fro') is the same with sqrt(sum(diag(x'*x)))
 cecost = 0.5 * norm(W'*Y-x,'fro') ^ 2 / params.m; % use norm to speed up
+%cecost = 0.5 * sum(sum((W'*Y-x).^2));
 cost = wcost + cecost;
 Wgrad = params.lambda * (Y ./sqrt(Y.^2 + params.epsilon)) * x' / params.m + (Y*Y'*W + W*W'*Y*x' - 2*Y*x') / params.m;
 
-% Why these two results are different? I think they should be same.. :(
-% If you know, maybe you can tell me. Email : jc_liu@qq.com
 
 % unproject gradient for minFunc
 grad = l2rowscaledg(Wold, W, Wgrad, 1);

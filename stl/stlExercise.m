@@ -20,7 +20,7 @@ params.n=params.patchWidth^2;   % dimensionality of input to RICA
 params.lambda = 0.0005;   % sparsity cost
 params.numFeatures = 32; % number of filter banks to learn
 params.epsilon = 1e-2;   
-
+params.m = 200000;
 %% ======================================================================
 %  STEP 1: Load data from the MNIST database
 %
@@ -74,7 +74,8 @@ randTheta = randTheta(:);
 
 % subsample random patches from the unlabelled+training data
 patches = samplePatches([unlabeledData,trainData],params.patchWidth,200000);
-
+fprintf('size(patches)\n');
+size(patches)
 %configure minFunc
 options.Method = 'lbfgs';
 options.MaxFunEvals = Inf;
@@ -86,7 +87,8 @@ opttheta = randTheta;
 %  You will need to whitened the patches with the zca2 function 
 %  then call minFunc with the softICACost function as seen in the RICA exercise.
 %%% YOUR CODE HERE %%%
-
+[patches,V] = zca2(patches);
+[opttheta, cost, exitflag] = minFunc( @(theta) softICACost(theta, patches, params), randTheta, options); 
 % reshape visualize weights
 W = reshape(opttheta, params.numFeatures, params.n);
 display_network(W');
@@ -101,7 +103,8 @@ W = W*V;
 %  reshape RICA weights to be convolutional weights.
 W = reshape(W, params.numFeatures, params.patchWidth, params.patchWidth);
 W = permute(W, [2,3,1]);
-
+fprintf('size(W)\n');
+size(W)
 %  setting up convolutional feed-forward. You do need to modify this code.
 filterDim = params.patchWidth;
 poolDim = 5;
@@ -123,6 +126,8 @@ numClasses  = 5; % doing 5-class digit recognition
 % initialize softmax weights randomly
 randTheta2 = randn(numClasses, featureSize)*0.01;  % 1/sqrt(params.n);
 randTheta2 = randTheta2 ./ repmat(sqrt(sum(randTheta2.^2,2)), 1, size(randTheta2,2)); 
+fprintf('size(randTheta2)\n');
+size(randTheta2)
 randTheta2 = randTheta2';
 randTheta2 = randTheta2(:);
 
@@ -134,13 +139,15 @@ options.MaxIter = 300;
 
 % optimize
 %%% YOUR CODE HERE %%%
-
-
+opttheta2 = minFunc(@softmax_regression_vec, randTheta2(:), options, trainFeatures, trainLabels);
+opttheta2 = reshape(opttheta2, [], numClasses);
 %%======================================================================
 %% STEP 5: Testing 
 % Compute Predictions on tran and test sets using softmaxPredict
 % and softmaxModel
 %%% YOUR CODE HERE %%%
+[~,train_pred] = max(opttheta2'*trainFeatures,[],1);
+[~,pred] = max(opttheta2'*testFeatures,[],1);
 % Classification Score
 fprintf('Train Accuracy: %f%%\n', 100*mean(train_pred(:) == trainLabels(:)));
 fprintf('Test Accuracy: %f%%\n', 100*mean(pred(:) == testLabels(:)));

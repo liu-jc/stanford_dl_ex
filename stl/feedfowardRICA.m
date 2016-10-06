@@ -44,7 +44,7 @@ for imageNum = 1:numImages
     % Form W, obtain the feature (filterDim x filterDim) needed during the
     % convolution
     %%% YOUR CODE HERE %%%
-
+    filter = W(:,:,filterNum);
     % Flip the feature matrix because of the definition of convolution, as explained later
     filter = rot90(squeeze(filter),2);
       
@@ -55,10 +55,15 @@ for imageNum = 1:numImages
     % Convolve "filter" with "im" to find "resp"
     % be sure to do a 'valid' convolution
     %%% YOUR CODE HERE %%%
+    resp = conv2(im,filter,'valid');
     % Then, apply square-square-root pooling on "resp" to get the hidden
     % activation "act"
     act = zeros(convDim / poolDim, convDim / poolDim); % You should replace this
     %%% YOUR CODE HERE %%%
+    resp_sq = resp .^ 2;
+    pooled = conv2(resp_sq,poolMat,'valid');
+    pooled = pooled(1:poolDim:end,1:poolDim:end);
+    act = sqrt(pooled + params.epsilon);
     features(:, :, filterNum, imageNum) = act;
   end
 end
